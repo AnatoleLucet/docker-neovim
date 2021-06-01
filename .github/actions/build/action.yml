@@ -1,0 +1,34 @@
+name: "Build and publish Neovim image"
+
+inputs:
+  target:
+    description: "The target version of Neovim"
+    required: true
+  tag:
+    description: "Final image's tag (default to 'target')"
+    require: false
+    default: ${{ inputs.target }}
+
+runs:
+  using: "composite"
+  env:
+    IMAGE_NAME: anatolelucet/neovim:${{ inputs.tag }}
+  steps: 
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
+
+    - name: Build
+      run: |
+        docker build -f Dockerfile --build-arg TARGET=${{ inputs.target }} -t $IMAGE_NAME .
+
+    - name: Login
+      uses: docker/login-action@v1
+      with:
+        username: anatolelucet
+        password: ${{ secrets.DOCKERHUB_PAT }}
+
+    - name: Push
+      run: |
+        docker push $IMAGE_NAME
+

@@ -1,0 +1,39 @@
+name: Release Neovim images
+
+on:
+  schedule:
+    - cron: "25 5 * * *"
+
+jobs:
+  stable:
+    name: Stable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/build
+        name: Stable
+        with:
+          target: stable
+
+  nightly:
+    name: Nightly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/build
+        with:
+          target: nightly
+
+  latest:
+    name: Latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retrieve lastest version
+        run: |
+          export TARGET=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep tag_name | cut -d \" -f 4)
+          echo "TARGET=$TARGET" >> $GITHUB_ENV
+          echo "TAG=$(echo $TARGET | cut -d 'v' -f 2)" >> $GITHUB_ENV
+
+      - uses: ./.github/actions/build
+        with:
+          target: ${{ env.TARGET }}
+          tag: ${{ env.TAG }}
+
