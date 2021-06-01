@@ -13,11 +13,9 @@ RUN apt update && apt upgrade -y && \
   cd /tmp/neovim && \
 	git checkout tags/${TARGET} && \
   make CMAKE_BUILD_TYPE=Release && \
-  make CMAKE_INSTALL_PREFIX=/bin/nvim install && \
+  make CMAKE_INSTALL_PREFIX=/usr/local install && \
   cd ~ && \
   rm -rf /tmp/neovim && \
   apt purge -y ${BUILD_APT_DEPS} && apt autoremove -y --purge
 
-WORKDIR /root
-
-CMD ["/root/nvim/bin/nvim"]
+CMD ["/usr/local/bin/nvim"]
