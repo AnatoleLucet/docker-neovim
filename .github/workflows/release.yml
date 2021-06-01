@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "Dockerfile"
+      - ".github/**"
   schedule:
     - cron: "25 5 * * *"
 
