@@ -1,4 +1,4 @@
-name: Release Neovim images
+name: Release
 
 on:
   schedule:
@@ -9,31 +9,50 @@ jobs:
     name: Stable
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/build
-        name: Stable
+      - uses: actions/checkout@v2
         with:
+          ref: ${{ github.head_ref }}
+
+      - uses: ./.github/actions/release
+        name: Release stable
+        with:
+          password: ${{ secrets.DOCKERHUB_PAT }}
           target: stable
+          allowOverride: true
 
   nightly:
     name: Nightly
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/build
+      - uses: actions/checkout@v2
         with:
+          ref: ${{ github.head_ref }}
+
+      - uses: ./.github/actions/release
+        name: Release nightly
+        with:
+          password: ${{ secrets.DOCKERHUB_PAT }}
           target: nightly
+          allowOverride: true
 
   latest:
     name: Latest
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
       - name: Retrieve lastest version
         run: |
           export TARGET=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep tag_name | cut -d \" -f 4)
           echo "TARGET=$TARGET" >> $GITHUB_ENV
           echo "TAG=$(echo $TARGET | cut -d 'v' -f 2)" >> $GITHUB_ENV
 
-      - uses: ./.github/actions/build
+      - uses: ./.github/actions/release
+        name: Release latest
         with:
+          password: ${{ secrets.DOCKERHUB_PAT }}
           target: ${{ env.TARGET }}
           tag: ${{ env.TAG }}
 
