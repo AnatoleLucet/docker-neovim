@@ -1,4 +1,3 @@
-# FIXME: switch to an alpine image
 FROM ubuntu:20.04
 
 LABEL maintainer="AnatoleLucet"

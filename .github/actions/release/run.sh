@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Abort if the image already exists on Docker Hub
 export IS_EXISTENT=$([ $(curl --silent -f -lSL https://index.docker.io/v1/repositories/anatolelucet/neovim/tags/${TAG:-$TARGET} 2> /dev/null) ] && echo true || echo false)
 [ "$ALLOW_OVERRIDE" = "false" ] && [ "$IS_EXISTENT" = "true" ] && echo "Cannot override the existing image. Exiting." && exit 0 || true
