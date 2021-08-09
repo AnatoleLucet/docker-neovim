@@ -2,7 +2,7 @@ FROM alpine:3.13 AS builder
 
 LABEL maintainer="AnatoleLucet"
 
-ARG BUILD_DEPS="autoconf automake cmake curl g++ gettext gettext-dev git libtool make ninja openssl pkgconfig unzip"
+ARG BUILD_DEPS="autoconf automake cmake curl g++ gettext gettext-dev git libtool make ninja openssl pkgconfig unzip binutils"
 ARG TARGET=stable
 
 RUN apk add --no-cache ${BUILD_DEPS} && \
@@ -13,7 +13,8 @@ RUN apk add --no-cache ${BUILD_DEPS} && \
   # see https://github.com/neovim/neovim/commit/38145b919d160ea63c2547533595e761b40cfe45
   git cherry-pick -n 38145b919d160ea63c2547533595e761b40cfe45 && \
   make CMAKE_BUILD_TYPE=Release && \
-  make CMAKE_INSTALL_PREFIX=/usr/local install
+  make CMAKE_INSTALL_PREFIX=/usr/local install && \
+  strip /usr/local/bin/nvim
 
 FROM alpine:3.13
 COPY --from=builder /usr/local /usr/local/
