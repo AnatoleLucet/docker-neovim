@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "Dockerfile"
+      - "*/Dockerfile"
       - ".github/**"
   schedule:
     - cron: "25 5 * * *"
