@@ -8,10 +8,8 @@ ARG TARGET=stable
 RUN apk add --no-cache ${BUILD_DEPS} && \
   git clone https://github.com/neovim/neovim.git /tmp/neovim && \
   cd /tmp/neovim && \
-	git checkout tags/${TARGET} && \
-  # Patch bug in build script on stable
-  # see https://github.com/neovim/neovim/commit/38145b919d160ea63c2547533595e761b40cfe45
-  git cherry-pick -n 38145b919d160ea63c2547533595e761b40cfe45 && \
+  git fetch && \
+  git checkout tags/${TARGET} && \
   make CMAKE_BUILD_TYPE=Release && \
   make CMAKE_INSTALL_PREFIX=/usr/local install && \
   strip /usr/local/bin/nvim
