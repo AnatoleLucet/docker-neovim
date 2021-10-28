@@ -38,7 +38,7 @@ jobs:
         name: Release nightly
         with:
           password: ${{ secrets.DOCKERHUB_PAT }}
-          target: nightly
+          target: master
           allowOverride: true
 
   latest:
