@@ -10,7 +10,7 @@ RUN apt update && apt upgrade -y && \
   apt install -y ${BUILD_APT_DEPS} && \
   git clone https://github.com/neovim/neovim.git /tmp/neovim && \
   cd /tmp/neovim && \
-  git fetch --all --tags && \
+  git fetch --all --tags -f && \
   git checkout ${TARGET} && \
   make CMAKE_BUILD_TYPE=Release && \
   make CMAKE_INSTALL_PREFIX=/usr/local install && \
