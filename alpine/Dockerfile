@@ -1,4 +1,4 @@
-FROM alpine:3.13 AS builder
+FROM alpine AS builder
 
 LABEL maintainer="AnatoleLucet"
 
@@ -14,7 +14,7 @@ RUN apk add --no-cache ${BUILD_DEPS} && \
   make install && \
   strip /usr/local/bin/nvim
 
-FROM alpine:3.13
+FROM alpine
 COPY --from=builder /usr/local /usr/local/
 RUN true # see: https://github.com/moby/moby/issues/37965
 # Required shared libraries
