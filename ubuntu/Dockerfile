@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS builder
+FROM ubuntu AS builder
 
 LABEL maintainer="AnatoleLucet"
 
@@ -16,7 +16,7 @@ RUN apt update && apt upgrade -y && \
   make install && \
   strip /usr/local/bin/nvim
 
-FROM ubuntu:20.04
+FROM ubuntu
 COPY --from=builder /usr/local /usr/local/
 
 CMD ["/usr/local/bin/nvim"]
