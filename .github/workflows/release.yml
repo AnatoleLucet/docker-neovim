@@ -6,61 +6,110 @@ on:
     branches:
       - main
     paths:
-      - "*/Dockerfile"
+      - "main.go"
+      - "build-config.json"
       - ".github/**"
   schedule:
     - cron: "25 5 * * *"
 
 jobs:
-  stable:
-    name: Stable
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
-
-      - uses: ./.github/actions/release
-        name: Release stable
-        with:
-          password: ${{ secrets.DOCKERHUB_PAT }}
-          version: stable
-          allowOverride: true
-
   nightly:
-    name: Nightly
+    name: Build Nightly Images
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v4
 
-      - uses: ./.github/actions/release
-        name: Release nightly
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          password: ${{ secrets.DOCKERHUB_PAT }}
-          version: master
-          tag: nightly
-          allowOverride: true
+          go-version: '1.21'
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Go program
+        run: go build -o docker-neovim-builder main.go
+
+      - name: Build and push nightly images
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PAT }}
+          VERSION: master
+          BUILD_TYPE: nightly
+          ALLOW_OVERRIDE: true
+        run: |
+          echo "Building nightly images from source..."
+          ./docker-neovim-builder -type nightly -base alpine -version master
+          ./docker-neovim-builder -type nightly -base bookworm -version master
+          ./docker-neovim-builder -type nightly -base bullseye -version master
 
   latest:
-    name: Latest
+    name: Build Latest Images
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v4
 
-      - name: Retrieve lastest version
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Go program
+        run: go build -o docker-neovim-builder main.go
+
+      - name: Build and push latest images from packages
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PAT }}
+          BUILD_TYPE: latest
+          ALLOW_OVERRIDE: true
+        run: |
+          echo "Building latest images from package managers..."
+          ./docker-neovim-builder -type latest -base alpine
+          ./docker-neovim-builder -type latest -base bookworm
+          ./docker-neovim-builder -type latest -base bullseye
+
+  versioned:
+    name: Build Versioned Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Go program
+        run: go build -o docker-neovim-builder main.go
+
+      - name: Retrieve latest version
         run: |
           export VERSION=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep tag_name | cut -d \" -f 4)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "TAG=$(echo $VERSION | cut -d 'v' -f 2)" >> $GITHUB_ENV
 
-      - uses: ./.github/actions/release
-        name: Release latest
-        with:
-          password: ${{ secrets.DOCKERHUB_PAT }}
-          version: ${{ env.VERSION }}
-          tag: ${{ env.TAG }}
+      - name: Build and push versioned images from packages
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PAT }}
+          BUILD_TYPE: package
+        run: |
+          echo "Building versioned images from package managers..."
+          echo "Version: ${{ env.VERSION }}"
+          ./docker-neovim-builder -type package -base alpine -version ${{ env.TAG }}
+          ./docker-neovim-builder -type package -base bookworm -version ${{ env.TAG }}
+          ./docker-neovim-builder -type package -base bullseye -version ${{ env.TAG }}
 

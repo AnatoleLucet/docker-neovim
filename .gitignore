@@ -1,0 +1,18 @@
+# Go binaries
+docker-neovim-builder
+/docker-neovim-builder
+
+# Go module cache
+go.sum
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

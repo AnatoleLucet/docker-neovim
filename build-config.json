@@ -1,0 +1,8 @@
+{
+  "registry": "docker.io",
+  "username": "anatolelucet",
+  "repository": "neovim",
+  "base_images": ["alpine", "bookworm", "bullseye"],
+  "platforms": ["linux/amd64", "linux/arm64"],
+  "allow_override": false
+}
