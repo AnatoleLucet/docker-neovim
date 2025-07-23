@@ -137,6 +137,9 @@ func generateImageName(config Config, baseImage, customTag string) string {
 		return fmt.Sprintf("%s:latest-%s", repo, baseImage)
 	default:
 		// Version tag
+		if config.Version == "" {
+			config.Version = "unknown"
+		}
 		if baseImage == "alpine" {
 			return fmt.Sprintf("%s:%s-alpine", repo, config.Version)
 		}
