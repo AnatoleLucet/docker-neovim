@@ -15,7 +15,7 @@ type Config struct {
 	BuildType     string   `json:"build_type"` // "nightly" or "package"
 	BaseImages    []string `json:"base_images"`
 	Platforms     []string `json:"platforms"`
-	AllowOverride bool     `json:"allow_override"`
+	ForceRebuild  bool     `json:"force_rebuild"` // If true, rebuild even if image exists
 }
 
 func Load(path string) Config {
@@ -26,7 +26,7 @@ func Load(path string) Config {
 		Repository:    "neovim",
 		BaseImages:    []string{"alpine"},
 		Platforms:     []string{"linux/amd64", "linux/arm64"},
-		AllowOverride: false,
+		ForceRebuild:  true, // Default to rebuilding images for CI/CD workflows
 	}
 
 	// Try to load from file if it exists
@@ -48,7 +48,10 @@ func Load(path string) Config {
 		config.BuildType = buildType
 	}
 	if allowOverride := os.Getenv("ALLOW_OVERRIDE"); allowOverride == "true" {
-		config.AllowOverride = true
+		config.ForceRebuild = true
+	}
+	if forceRebuild := os.Getenv("FORCE_REBUILD"); forceRebuild == "false" {
+		config.ForceRebuild = false
 	}
 
 	return config

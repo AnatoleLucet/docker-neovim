@@ -13,11 +13,12 @@ import (
 
 func main() {
 	var (
-		configPath = flag.String("config", "build-config.json", "Path to build configuration file")
-		version    = flag.String("version", "", "Neovim version to build")
-		buildType  = flag.String("type", "package", "Build type: 'nightly' or 'package'")
-		baseImage  = flag.String("base", "alpine", "Base image: 'alpine', 'bookworm', or 'bullseye'")
-		tag        = flag.String("tag", "", "Custom tag for the image")
+		configPath   = flag.String("config", "build-config.json", "Path to build configuration file")
+		version      = flag.String("version", "", "Neovim version to build")
+		buildType    = flag.String("type", "package", "Build type: 'nightly' or 'package'")
+		baseImage    = flag.String("base", "alpine", "Base image: 'alpine', 'bookworm', or 'bullseye'")
+		tag          = flag.String("tag", "", "Custom tag for the image")
+		forceRebuild = flag.Bool("force-rebuild", false, "Force rebuild even if image exists")
 	)
 	flag.Parse()
 
@@ -32,6 +33,9 @@ func main() {
 	}
 	if *baseImage != "" {
 		cfg.BaseImages = []string{*baseImage}
+	}
+	if *forceRebuild {
+		cfg.ForceRebuild = true
 	}
 
 	// Login to Docker registry
@@ -52,8 +56,8 @@ func main() {
 	for _, base := range cfg.BaseImages {
 		imageName := cfg.GenerateImageName(base, *tag)
 
-		if !cfg.AllowOverride && registry.ImageExists(imageName) {
-			log.Printf("Image %s already exists, skipping", imageName)
+		if !cfg.ForceRebuild && registry.ImageExists(imageName) {
+			log.Printf("Image %s already exists, skipping (use -force-rebuild to override)", imageName)
 			continue
 		}
 

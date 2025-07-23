@@ -15,8 +15,8 @@ func TestLoad(t *testing.T) {
 	if cfg.Username != "anatolelucet" {
 		t.Errorf("Expected default username 'anatolelucet', got %s", cfg.Username)
 	}
-	if cfg.AllowOverride != false {
-		t.Errorf("Expected default AllowOverride false, got %v", cfg.AllowOverride)
+	if cfg.ForceRebuild != true {
+		t.Errorf("Expected default ForceRebuild true, got %v", cfg.ForceRebuild)
 	}
 }
 
@@ -56,7 +56,7 @@ func TestLoadWithFile(t *testing.T) {
 		"registry": "custom.registry.com",
 		"username": "testuser",
 		"repository": "testapp",
-		"allow_override": true
+		"force_rebuild": false
 	}`
 	
 	tmpFile, err := ioutil.TempFile("", "test-config-*.json")
@@ -77,8 +77,8 @@ func TestLoadWithFile(t *testing.T) {
 	if cfg.Username != "testuser" {
 		t.Errorf("Expected username 'testuser', got %s", cfg.Username)
 	}
-	if cfg.AllowOverride != true {
-		t.Errorf("Expected AllowOverride true, got %v", cfg.AllowOverride)
+	if cfg.ForceRebuild != false {
+		t.Errorf("Expected ForceRebuild false, got %v", cfg.ForceRebuild)
 	}
 }
 
@@ -87,13 +87,13 @@ func TestEnvironmentOverrides(t *testing.T) {
 	os.Setenv("DOCKER_PASSWORD", "secret")
 	os.Setenv("VERSION", "v1.0.0")
 	os.Setenv("BUILD_TYPE", "nightly")
-	os.Setenv("ALLOW_OVERRIDE", "true")
+	os.Setenv("FORCE_REBUILD", "false")
 	
 	defer func() {
 		os.Unsetenv("DOCKER_PASSWORD")
 		os.Unsetenv("VERSION")
 		os.Unsetenv("BUILD_TYPE")
-		os.Unsetenv("ALLOW_OVERRIDE")
+		os.Unsetenv("FORCE_REBUILD")
 	}()
 	
 	cfg := Load("nonexistent.json")
@@ -106,7 +106,7 @@ func TestEnvironmentOverrides(t *testing.T) {
 	if cfg.BuildType != "nightly" {
 		t.Errorf("Expected build type from env, got %s", cfg.BuildType)
 	}
-	if cfg.AllowOverride != true {
-		t.Errorf("Expected AllowOverride from env, got %v", cfg.AllowOverride)
+	if cfg.ForceRebuild != false {
+		t.Errorf("Expected ForceRebuild from env, got %v", cfg.ForceRebuild)
 	}
 }
