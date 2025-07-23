@@ -24,7 +24,7 @@ jobs:
         name: Release stable
         with:
           password: ${{ secrets.DOCKERHUB_PAT }}
-          target: stable
+          version: stable
           allowOverride: true
 
   nightly:
@@ -39,7 +39,7 @@ jobs:
         name: Release nightly
         with:
           password: ${{ secrets.DOCKERHUB_PAT }}
-          target: master
+          version: master
           tag: nightly
           allowOverride: true
 
@@ -53,14 +53,14 @@ jobs:
 
       - name: Retrieve lastest version
         run: |
-          export TARGET=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep tag_name | cut -d \" -f 4)
-          echo "TARGET=$TARGET" >> $GITHUB_ENV
-          echo "TAG=$(echo $TARGET | cut -d 'v' -f 2)" >> $GITHUB_ENV
+          export VERSION=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep tag_name | cut -d \" -f 4)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG=$(echo $VERSION | cut -d 'v' -f 2)" >> $GITHUB_ENV
 
       - uses: ./.github/actions/release
         name: Release latest
         with:
           password: ${{ secrets.DOCKERHUB_PAT }}
-          target: ${{ env.TARGET }}
+          version: ${{ env.VERSION }}
           tag: ${{ env.TAG }}
 
