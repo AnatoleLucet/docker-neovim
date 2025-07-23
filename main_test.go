@@ -3,10 +3,13 @@ package main
 import (
 	"strings"
 	"testing"
+
+	"github.com/AnatoleLucet/docker-neovim/pkg/config"
+	"github.com/AnatoleLucet/docker-neovim/pkg/dockerfile"
 )
 
 func TestGenerateImageName(t *testing.T) {
-	config := Config{
+	cfg := config.Config{
 		Username:   "test",
 		Repository: "neovim",
 	}
@@ -29,10 +32,10 @@ func TestGenerateImageName(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		config.BuildType = tt.buildType
-		result := generateImageName(config, tt.baseImage, tt.customTag)
+		cfg.BuildType = tt.buildType
+		result := cfg.GenerateImageName(tt.baseImage, tt.customTag)
 		if result != tt.expected {
-			t.Errorf("generateImageName(%s, %s, %s) = %s, want %s", 
+			t.Errorf("GenerateImageName(%s, %s, %s) = %s, want %s", 
 				tt.buildType, tt.baseImage, tt.customTag, result, tt.expected)
 		}
 	}
@@ -40,7 +43,7 @@ func TestGenerateImageName(t *testing.T) {
 
 func TestGenerateDockerfile(t *testing.T) {
 	// Test nightly dockerfile generation
-	nightlyDockerfile := generateDockerfile("nightly", "alpine", "master")
+	nightlyDockerfile := dockerfile.Generate("nightly", "alpine", "master")
 	if !strings.Contains(nightlyDockerfile, "FROM alpine AS builder") {
 		t.Error("Nightly dockerfile should use multi-stage build")
 	}
@@ -49,7 +52,7 @@ func TestGenerateDockerfile(t *testing.T) {
 	}
 
 	// Test package dockerfile generation
-	packageDockerfile := generateDockerfile("package", "alpine", "")
+	packageDockerfile := dockerfile.Generate("package", "alpine", "")
 	if !strings.Contains(packageDockerfile, "apk add --no-cache neovim") {
 		t.Error("Package dockerfile should install neovim package")
 	}
@@ -58,12 +61,12 @@ func TestGenerateDockerfile(t *testing.T) {
 	}
 
 	// Test different base images
-	bookwormDockerfile := generateDockerfile("package", "bookworm", "")
+	bookwormDockerfile := dockerfile.Generate("package", "bookworm", "")
 	if !strings.Contains(bookwormDockerfile, "FROM debian:bookworm") {
 		t.Error("Bookworm dockerfile should use debian:bookworm base")
 	}
 
-	bullseyeDockerfile := generateDockerfile("package", "bullseye", "")
+	bullseyeDockerfile := dockerfile.Generate("package", "bullseye", "")
 	if !strings.Contains(bullseyeDockerfile, "FROM debian:bullseye") {
 		t.Error("Bullseye dockerfile should use debian:bullseye base")
 	}
