@@ -6,61 +6,74 @@ on:
     branches:
       - main
     paths:
-      - "*/Dockerfile"
       - ".github/**"
+      - ".docker/**"
   schedule:
     - cron: "25 5 * * *"
 
 jobs:
-  stable:
-    name: Stable
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
+  latest-alpine:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: stable
+      image_version: latest,latest-alpine,{version_major}-alpine,{version_major}.{version_minor}-alpine,{version_major}.{version_minor}.{version_patch}-alpine
+      distro_name: alpine
+      distro_version: latest
 
-      - uses: ./.github/actions/release
-        name: Release stable
-        with:
-          password: ${{ secrets.DOCKERHUB_PAT }}
-          version: stable
-          allowOverride: true
+  latest-bookworm:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: stable
+      image_version: latest-bookworm,{version_major}-bookworm,{version_major}.{version_minor}-bookworm,{version_major}.{version_minor}.{version_patch}-bookworm
+      distro_name: debian
+      distro_version: bookworm
 
-  nightly:
-    name: Nightly
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
+  latest-bullseye:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: stable
+      image_version: latest-bullseye,{version_major}-bullseye,{version_major}.{version_minor}-bullseye,{version_major}.{version_minor}.{version_patch}-bullseye
+      distro_name: debian
+      distro_version: bullseye
 
-      - uses: ./.github/actions/release
-        name: Release nightly
-        with:
-          password: ${{ secrets.DOCKERHUB_PAT }}
-          version: master
-          tag: nightly
-          allowOverride: true
+  nightly-alpine:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: nightly
+      image_version: nightly-alpine
+      distro_name: alpine
+      distro_version: latest
 
-  latest:
-    name: Latest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
+  nightly-bookworm:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: nightly
+      image_version: nightly-bookworm
+      distro_name: debian
+      distro_version: bookworm
 
-      - name: Retrieve lastest version
-        run: |
-          export VERSION=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | grep tag_name | cut -d \" -f 4)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "TAG=$(echo $VERSION | cut -d 'v' -f 2)" >> $GITHUB_ENV
-
-      - uses: ./.github/actions/release
-        name: Release latest
-        with:
-          password: ${{ secrets.DOCKERHUB_PAT }}
-          version: ${{ env.VERSION }}
-          tag: ${{ env.TAG }}
-
+  nightly-bullseye:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: nightly
+      image_version: nightly-bullseye
+      distro_name: debian
+      distro_version: bullseye

@@ -1,0 +1,49 @@
+name: "Build and Push digest"
+description: "Build and Push the image to Docker Hub. Outputs the image digest."
+
+inputs:
+  neovim_version: 
+    description: "The Neovim version"
+    required: true
+
+  image_name: 
+    description: "The image name"
+    required: true
+  image_arch:
+    description: "The buildx arch (linux/amd64, linux/arm64, etc)"
+    required: true
+
+  distro_name:
+    description: "The distribution name of the base image"
+    required: true
+  distro_version:
+    description: "The distribution version of the base image"
+    required: true
+
+outputs:
+  digest:
+    description: "Image digest"
+    value: ${{ steps.build.outputs.digest }}
+
+runs:
+  using: "composite"
+  steps: 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - id: build
+        name: Build and Push
+        shell: bash
+        run: |
+          docker buildx build \
+            -t "${{ inputs.image_name }}" \
+            -f ".docker/${{ inputs.distro_name }}/Dockerfile" \
+            --build-arg NEOVIM_VERSION="${{ inputs.neovim_version }}" \
+            --build-arg DISTRO_VERSION="${{ inputs.distro_version }}" \
+            --platform "${{ inputs.image_arch }}" \
+            --output push-by-digest=true,type=image,push=true \
+            .docker 2>&1 | tee logs
+
+          # an ugly way to get the digest hash but there doesn't seem to be a cleaner way :/
+          digest=$(grep "exporting manifest list sha256:.* done" logs | sed "s/.* \(sha256:[a-z0-9]*\) .*/\1/")
+          echo "digest=$digest" >> $GITHUB_OUTPUT
