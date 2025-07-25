@@ -1,0 +1,121 @@
+name: Publish
+
+on:
+  workflow_call:
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_PAT:
+        required: true
+
+    inputs:
+      neovim_version:
+        type: string
+        default: stable
+
+      image_name:
+        type: string
+        default: anatolelucet/neovim
+      image_version:
+        type: string
+        default: latest
+
+      distro_name:
+        type: string
+        required: true
+      distro_version:
+        type: string
+        required: true
+
+jobs:
+  amd64:
+    runs-on: ubuntu-24.04
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+
+      - id: build
+        name: Build and Push
+        uses: ./.github/actions/build
+        with:
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub_pat: ${{ secrets.DOCKERHUB_PAT }}
+
+          neovim_version: ${{ inputs.neovim_version }}
+
+          image_name: ${{ inputs.image_name }}
+          image_arch: linux/amd64
+
+          distro_name:  ${{ inputs.distro_name }}
+          distro_version:  ${{ inputs.distro_version }}
+
+  arm64:
+    runs-on: ubuntu-24.04-arm
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+
+      - id: build
+        name: Build and Push
+        uses: ./.github/actions/build
+        with:
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub_pat: ${{ secrets.DOCKERHUB_PAT }}
+
+          neovim_version: ${{ inputs.neovim_version }}
+
+          image_name: ${{ inputs.image_name }}
+          image_arch: linux/arm64
+
+          distro_name:  ${{ inputs.distro_name }}
+          distro_version:  ${{ inputs.distro_version }}
+
+  tag:
+    runs-on: ubuntu-latest
+    needs: ["amd64", "arm64"]
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+
+      - name: Tag images
+        run: |
+          IMAGE_VERSION="${{ inputs.image_version }}"
+
+          RELEASE=$(curl -s "https://api.github.com/repos/neovim/neovim/releases/tags/${{ inputs.neovim_version }}")
+          VERSION=$(jq '.body | capture("NVIM v(?<major>\\d+).(?<minor>\\d+).(?<patch>\\d+)") // {major:"0",minor:"0",patch:"0"}' <<< $RELEASE)
+
+          VERSION_MAJOR=$(jq -r '.major' <<< $VERSION)
+          VERSION_MINOR=$(jq -r '.minor' <<< $VERSION)
+          VERSION_PATCH=$(jq -r '.patch' <<< $VERSION)
+
+          IFS=","
+          for image_version_tpl in $IMAGE_VERSION; do
+            image_version=$(echo $image_version_tpl | sed "s/{version_major}/$VERSION_MAJOR/g; s/{version_minor}/$VERSION_MINOR/g; s/{version_patch}/$VERSION_PATCH/g")
+
+            docker buildx imagetools create \
+              -t "${{ inputs.image_name }}:$image_version" \
+              "${{ inputs.image_name }}@${{ needs.amd64.outputs.digest }}" \
+              "${{ inputs.image_name }}@${{ needs.arm64.outputs.digest }}"
+          done
