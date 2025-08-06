@@ -37,10 +37,10 @@ CMD ["/usr/bin/nvim"]
 
 ## Tags
 
-Alpine: `:latest`, `:latest-alpine`, `:0-alpine`, `0.11-alpine`, `0.11.3-alpine`, `:nightly-alpine`
+Alpine: `:latest`, `:latest-alpine`, `:0-alpine`, `:0.11-alpine`, `:0.11.3-alpine`, `:nightly-alpine`
 
-Debian Bookworm: `:latest-bookworm`, `:0-bookworm`, `0.11-bookworm`, `0.11.3-bookworm`, `:nightly-bookworm`
+Debian Bookworm: `:latest-bookworm`, `:0-bookworm`, `:0.11-bookworm`, `:0.11.3-bookworm`, `:nightly-bookworm`
 
-Debian Bullseye: `:latest-bullseye`, `:0-bullseye`, `0.11-bullseye`, `0.11.3-bullseye`, `:nightly-bullseye`
+Debian Bullseye: `:latest-bullseye`, `:0-bullseye`, `:0.11-bullseye`, `:0.11.3-bullseye`, `:nightly-bullseye`
 
 You can find the newest releases here: https://hub.docker.com/r/anatolelucet/neovim/tags
