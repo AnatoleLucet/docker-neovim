@@ -33,17 +33,20 @@ runs:
 
       - id: build
         name: Build and Push
-        shell: bash
-        run: |
-          docker buildx build \
-            -t "${{ inputs.image_name }}" \
-            -f ".docker/${{ inputs.distro_name }}/Dockerfile" \
-            --build-arg NEOVIM_VERSION="${{ inputs.neovim_version }}" \
-            --build-arg DISTRO_VERSION="${{ inputs.distro_version }}" \
-            --platform "${{ inputs.image_arch }}" \
-            --output push-by-digest=true,type=image,push=true \
-            .docker 2>&1 | tee logs
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          command: |
+            docker buildx build \
+              -t "${{ inputs.image_name }}" \
+              -f ".docker/${{ inputs.distro_name }}/Dockerfile" \
+              --build-arg NEOVIM_VERSION="${{ inputs.neovim_version }}" \
+              --build-arg DISTRO_VERSION="${{ inputs.distro_version }}" \
+              --platform "${{ inputs.image_arch }}" \
+              --output push-by-digest=true,type=image,push=true \
+              .docker 2>&1 | tee logs
 
-          # an ugly way to get the digest hash but there doesn't seem to be a cleaner way :/
-          digest=$(grep "exporting manifest list sha256:.* done" logs | sed "s/.* \(sha256:[a-z0-9]*\) .*/\1/")
-          echo "digest=$digest" >> $GITHUB_OUTPUT
+            # an ugly way to get the digest hash but there doesn't seem to be a cleaner way :/
+            digest=$(grep "exporting manifest list sha256:.* done" logs | sed "s/.* \(sha256:[a-z0-9]*\) .*/\1/")
+            echo "digest=$digest" >> $GITHUB_OUTPUT
