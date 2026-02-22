@@ -5,7 +5,7 @@ FROM alpine:${DISTRO_VERSION} AS builder
 LABEL maintainer="AnatoleLucet"
 
 ARG NEOVIM_VERSION=stable
-ARG BUILD_DEPS="build-base cmake libtool autoconf automake gettext-dev curl unzip"
+ARG BUILD_DEPS="build-base cmake libtool autoconf automake gettext-dev curl unzip linux-headers"
 
 COPY ./build-neovim.sh /tmp/
 
