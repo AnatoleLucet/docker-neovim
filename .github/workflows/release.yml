@@ -23,6 +23,17 @@ jobs:
       distro_name: alpine
       distro_version: latest
 
+  latest-trixie:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: stable
+      image_version: latest-trixie,{version_major}-trixie,{version_major}.{version_minor}-trixie,{version_major}.{version_minor}.{version_patch}-trixie
+      distro_name: debian
+      distro_version: trixie
+
   latest-bookworm:
     uses: ./.github/workflows/publish.yml
     secrets:
@@ -33,17 +44,6 @@ jobs:
       image_version: latest-bookworm,{version_major}-bookworm,{version_major}.{version_minor}-bookworm,{version_major}.{version_minor}.{version_patch}-bookworm
       distro_name: debian
       distro_version: bookworm
-
-  latest-bullseye:
-    uses: ./.github/workflows/publish.yml
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
-    with:
-      neovim_version: stable
-      image_version: latest-bullseye,{version_major}-bullseye,{version_major}.{version_minor}-bullseye,{version_major}.{version_minor}.{version_patch}-bullseye
-      distro_name: debian
-      distro_version: bullseye
 
   nightly-alpine:
     uses: ./.github/workflows/publish.yml
@@ -56,6 +56,17 @@ jobs:
       distro_name: alpine
       distro_version: latest
 
+  nightly-trixie:
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
+    with:
+      neovim_version: nightly
+      image_version: nightly-trixie
+      distro_name: debian
+      distro_version: trixie
+
   nightly-bookworm:
     uses: ./.github/workflows/publish.yml
     secrets:
@@ -66,14 +77,3 @@ jobs:
       image_version: nightly-bookworm
       distro_name: debian
       distro_version: bookworm
-
-  nightly-bullseye:
-    uses: ./.github/workflows/publish.yml
-    secrets:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_PAT: ${{ secrets.DOCKERHUB_PAT }}
-    with:
-      neovim_version: nightly
-      image_version: nightly-bullseye
-      distro_name: debian
-      distro_version: bullseye
